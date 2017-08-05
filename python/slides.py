@@ -41,8 +41,6 @@ def scrapeTextFromSlides(slides):
                         slideText.append(x["textRun"]["content"])
             except:
                 continue
-    if len(slideText) > 0:
-        writeToTextFile(slideText)
     return slideText
 
 def writeToTextFile(text):
@@ -95,12 +93,9 @@ def main():
 
     slides = presentation.get('slides')
     slideText = scrapeTextFromSlides(slides)
-    data = { "slides": slideText }
+    data = { "slides": slideText , "presentationId": presentationId}
     resp = requests.post("http://localhost:8000/lyricize/", data=json.dumps(data))
     print(resp.text)
-
-    # Insert comment example
-    # drive.main(presentationId, "woooooow")
 
 if __name__ == '__main__':
     main()

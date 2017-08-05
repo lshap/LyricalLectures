@@ -2,23 +2,34 @@
 from __future__ import print_function
 import httplib2
 import os
+import re
 
 from apiclient import discovery
 from oauth2client import client
 from oauth2client import tools
+from apiclient import errors
 from oauth2client.file import Storage
 
-try:
-    import argparse
-    flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
-except ImportError:
-    flags = None
 
-# If modifying these scopes, delete your previously saved credentials
-# at ~/.credentials/slides.googleapis.com-python-quickstart.json
-SCOPES = 'https://www.googleapis.com/auth/presentations.readonly'
-CLIENT_SECRET_FILE = '../client_secret.json'
-APPLICATION_NAME = 'Google Slides API Python Quickstart'
+def insert_comment(service, file_id, content):
+  """Insert a new document-level comment.
+
+  Args:
+    service: Drive API service instance.
+    file_id: ID of the file to insert comment for.
+    content: Text content of the comment.
+  Returns:
+    The inserted comment if successful, None otherwise.
+  """
+  new_comment = {
+      'content': content
+  }
+  try:
+    return service.comments().insert(
+        fileId=file_id, body=new_comment).execute()
+  except errors.HttpError, error:
+    print('An error occurred: %s' % error)
+  return None
 
 
 def get_credentials():
@@ -30,12 +41,15 @@ def get_credentials():
     Returns:
         Credentials, the obtained credential.
     """
+    SCOPES = 'https://www.googleapis.com/auth/drive'
+    CLIENT_SECRET_FILE = '../client_secret.json'
+    APPLICATION_NAME = 'Drive API Python Quickstart'
     home_dir = os.path.expanduser('~')
     credential_dir = os.path.join(home_dir, '.credentials')
     if not os.path.exists(credential_dir):
         os.makedirs(credential_dir)
     credential_path = os.path.join(credential_dir,
-                                   'slides.googleapis.com-python-quickstart.json')
+                                   'drive-python-quickstart.json')
 
     store = Storage(credential_path)
     credentials = store.get()
@@ -49,26 +63,15 @@ def get_credentials():
         print('Storing credentials to ' + credential_path)
     return credentials
 
-def main():
-    """Shows basic usage of the Slides API.
+def main(presentationId, comment):
+    """Shows basic usage of the Google Drive API.
 
-    Creates a Slides API service object and prints the number of slides and
-    elements in a sample presentation:
-    https://docs.google.com/presentation/d/1EAYk18WDjIG-zp_0vLm3CsfQh_i8eXc67Jo2O9C6Vuc/edit
+    Creates a Google Drive API service object and outputs the names and IDs
+    for up to 10 files.
     """
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
-    service = discovery.build('slides', 'v1', http=http)
+    service = discovery.build('drive', 'v2', http=http)
+    insertedComment = insert_comment(service, presentationId, comment)
 
-    presentationId = '1EAYk18WDjIG-zp_0vLm3CsfQh_i8eXc67Jo2O9C6Vuc'
-    presentation = service.presentations().get(
-        presentationId=presentationId).execute()
-    slides = presentation.get('slides')
-
-    print ('The presentation contains {} slides:'.format(len(slides)))
-    for i, slide in enumerate(slides):
-        print('- Slide #{} contains {} elements.'.format(i + 1,
-            len(slide.get('pageElements'))))
-
-if __name__ == '__main__':
-    main()
+    print(insertedComment)

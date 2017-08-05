@@ -9,7 +9,10 @@ import requests
 from bs4 import BeautifulSoup
 import json
 from LyricalLectures.settings import GENIUS_ACCESS_TOKEN
+from lyrics.drive import *
+
 from nltk import word_tokenize, pos_tag
+
 
 def replace_with_newlines(element):
     text = ''
@@ -72,5 +75,8 @@ def search(request):
                 slide_lyrics.append(lyric)
             else:
                 print "No verb found for this slide"
+        
+        # Insert comment example
+        main(body['presentationId'], slide_lyrics[0])
         return HttpResponse(json.dumps({"lyrics": slide_lyrics}, indent=2))
 

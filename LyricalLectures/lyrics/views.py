@@ -18,8 +18,29 @@ def replace_with_newlines(element):
             text += '\n'
     return text
 
+def find_first_lyric(hits, term):
+    found_lyrics = []
+    print len(hits)
+    for hit_result in hits:
+        hit = hit_result['result']
+        artist =  hit['primary_artist']['name']
+        title = hit["title"]
+        lyrics_page = requests.get(hit['url']).text
+        lyrics_soup = BeautifulSoup(lyrics_page, "html.parser")
+        lyrics = lyrics_soup.find("div", "lyrics").find_all("p")
+        if len(lyrics):
+            lines = lyrics[0].text.split('\n')
+            searchLyrics = [l for l in lines if term.lower() in l.lower()]
+            if len(searchLyrics) >=1:
+                found_lyrics.append("Just like {} said in {}: \"{}\"" \
+                    .format(artist, title, searchLyrics[0]))
+    if len(found_lyrics):
+        return max(found_lyrics, key=len)
+    else:
+        return "No result was found"
+
 def search(request):
-    term = "circulate"
+    term = "choose"
     url = "http://api.genius.com/search?q={}".format(term)
     headers = { "Authorization": "Bearer {}".format(GENIUS_ACCESS_TOKEN) }
     resp = requests.get(url, headers=headers)
@@ -27,17 +48,8 @@ def search(request):
         try:
             hits = resp.json()['response']['hits']
             if len(hits) >= 1:
-                first_hit = hits[0]
-                url = first_hit['result']['url']
-                lyrics_page = requests.get(url).text
-                lyrics_soup = BeautifulSoup(lyrics_page, "html.parser")
-                lyrics = lyrics_soup.find("div", "lyrics").find_all("p")
-                if len(lyrics):
-                    lines = lyrics[0].text.split('\n')
-                    searchLyric = [l for l in lines if term.lower() in l.lower()][0]
-                    return HttpResponse(searchLyric)
-                else:
-                    return HttpResponse("No lyrics were found")
+                lyric_resp = find_first_lyric(hits[:5], term)
+                return HttpResponse(lyric_resp)
             else:
                 return HttpResponse("No results were found")
         except ValueError:

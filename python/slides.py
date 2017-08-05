@@ -10,6 +10,8 @@ from apiclient import discovery
 from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
+import requests
+import json
 
 try:
     import argparse
@@ -42,7 +44,6 @@ def scrapeTextFromSlides(slides):
     if len(slideText) > 0:
         writeToTextFile(slideText)
     return slideText
-    
 
 def writeToTextFile(text):
     timeNow = datetime.datetime.now().strftime("%Y-%m-%d(%H:%M:%S)")
@@ -94,8 +95,12 @@ def main():
 
     slides = presentation.get('slides')
     slideText = scrapeTextFromSlides(slides)
+    data = { "slides": slideText }
+    resp = requests.post("http://localhost:8000/lyricize/", data=json.dumps(data))
+    print(resp.text)
 
-    drive.main(presentationId, "woooooow")
+    # Insert comment example
+    # drive.main(presentationId, "woooooow")
 
 if __name__ == '__main__':
     main()

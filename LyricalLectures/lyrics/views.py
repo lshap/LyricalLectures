@@ -54,25 +54,6 @@ def find_lyrics_for_verb(verb):
         except ValueError:
             return "Could not parse json from response: {}".format(resp.text)
 
-@csrf_exempt
-def search(request):
-    if request.method == "POST":
-        body = json.loads(request.body)
-        slide_lyrics = []
-        for slide in body['slides']:
-            tagged_sentence = pos_tag(word_tokenize(slide))
-            verbs = [w for w in tagged_sentence if w[1].startswith("VB")]
-            print verbs
-            verbs.sort(lambda x,y: cmp(len(x[1]), len(y[1])))
-            print verbs
-            verbs = [v[0] for v in verbs]
-            if len(verbs):
-                lyric = find_lyrics_for_verb(verbs[0])
-                slide_lyrics.append(lyric)
-            else:
-                print "No verb found for this slide"
-
-        # Insert comment example
 def lyricize(request):
     if request.method == 'POST':
         form = PresentationForm(request.POST)
@@ -87,8 +68,8 @@ def lyricize(request):
                 if len(verbs):
                     lyric = find_lyrics_for_verb(verbs[0])
                     slide_lyrics.append(lyric)
-                    add_comment_to_slide(presentation_url, slide_lyrics[0])
-            return HttpResponse(json.dumps({"lyrics": slide_lyrics}, indent=2))
+                    add_comment_to_slide(presentation_url, lyric)
+            return HttpResponse("Check out your updated document <a href={}>here</a>".format(presentation_url))
         else:
             return HttpResponse("Invalid form.")
 

@@ -11,7 +11,7 @@ from oauth2client.file import Storage
 
 
 def findpresentationId(url):
-    regex = re.findall(r"/presentation/d/([a-za-z0-9_-]+)/", url)
+    regex = re.findall(r"/presentation/d/([A-Za-z0-9_-]+)/", url)
     return regex[0]
 
 def insert_comment(service, file_id, content):
@@ -59,6 +59,7 @@ def get_credentials():
     if not credentials or credentials.invalid:
         flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
         flow.user_agent = APPLICATION_NAME
+        credentials = tools.run(flow, store)
         print('Storing credentials to ' + credential_path)
     return credentials
 
@@ -73,4 +74,3 @@ def add_comment_to_slide(presentation_url, comment):
     service = discovery.build('drive', 'v2', http=http)
     presentationId = findpresentationId(presentation_url)
     insertedComment = insert_comment(service, presentationId, comment)
-    print(insertedComment)

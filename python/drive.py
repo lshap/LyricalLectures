@@ -72,7 +72,7 @@ def get_credentials():
         print('Storing credentials to ' + credential_path)
     return credentials
 
-def main(presentationId, comment):
+def main():
     """Shows basic usage of the Google Drive API.
 
     Creates a Google Drive API service object and outputs the names and IDs
@@ -81,6 +81,9 @@ def main(presentationId, comment):
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('drive', 'v2', http=http)
-    insertedComment = insert_comment(service, presentationId, comment)
+    #insertedComment = insert_comment(service, presentationId, comment)
 
-    print(insertedComment)
+    #print(insertedComment)
+
+if __name__ == '__main__':
+    main()

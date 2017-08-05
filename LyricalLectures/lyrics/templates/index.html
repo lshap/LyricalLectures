@@ -1,0 +1,9 @@
+<html>
+    <body>
+        <form class="presentation-form" action="/lyricize/" method="post">
+            {% csrf_token %}
+            <input class="text-input" id="presentation_url" type="text" name="presentation_url">
+            <input class="submit-button" type="submit" value="ok">
+        </form>
+    </body>
+</html>

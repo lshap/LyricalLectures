@@ -19,5 +19,6 @@ from lyrics import views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^lyricize/', views.search),
+    url(r'^lyricize/', views.lyricize),
+    url(r'^', views.index),
 ]

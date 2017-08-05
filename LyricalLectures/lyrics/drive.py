@@ -1,4 +1,3 @@
-
 from __future__ import print_function
 import httplib2
 import os
@@ -10,6 +9,10 @@ from oauth2client import tools
 from apiclient import errors
 from oauth2client.file import Storage
 
+
+def findpresentationId(url):
+    regex = re.findall(r"/presentation/d/([a-za-z0-9_-]+)/", url)
+    return regex[0]
 
 def insert_comment(service, file_id, content):
   """Insert a new document-level comment.
@@ -56,14 +59,10 @@ def get_credentials():
     if not credentials or credentials.invalid:
         flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
         flow.user_agent = APPLICATION_NAME
-        if flags:
-            credentials = tools.run_flow(flow, store, flags)
-        else: # Needed only for compatibility with Python 2.6
-            credentials = tools.run(flow, store)
         print('Storing credentials to ' + credential_path)
     return credentials
 
-def main(presentationId, comment):
+def add_comment_to_slide(presentation_url, comment):
     """Shows basic usage of the Google Drive API.
 
     Creates a Google Drive API service object and outputs the names and IDs
@@ -72,6 +71,6 @@ def main(presentationId, comment):
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('drive', 'v2', http=http)
+    presentationId = findpresentationId(presentation_url)
     insertedComment = insert_comment(service, presentationId, comment)
-
     print(insertedComment)

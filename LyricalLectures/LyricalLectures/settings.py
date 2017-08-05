@@ -32,6 +32,7 @@ GENIUS_ACCESS_TOKEN = os.environ["GENIUS_ACCESS_TOKEN"]
 # Application definition
 
 INSTALLED_APPS = [
+    'lyrics.apps.LyricsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

@@ -13,15 +13,11 @@ from lyrics.drive import *
 
 from nltk import word_tokenize, pos_tag
 
+from .forms import PresentationForm
+from .google_slides import get_slides
 
-def replace_with_newlines(element):
-    text = ''
-    for elem in element.recursiveChildGenerator():
-        if isinstance(elem, types.StringTypes):
-            text += elem.strip()
-        elif elem.name == 'br':
-            text += '\n'
-    return text
+def index(request):
+    return render(request, 'index.html')
 
 def find_first_lyric(hits, term):
     found_lyrics = []
@@ -75,8 +71,24 @@ def search(request):
                 slide_lyrics.append(lyric)
             else:
                 print "No verb found for this slide"
-        
+
         # Insert comment example
-        main(body['presentationId'], slide_lyrics[0])
-        return HttpResponse(json.dumps({"lyrics": slide_lyrics}, indent=2))
+def lyricize(request):
+    if request.method == 'POST':
+        form = PresentationForm(request.POST)
+        if form.is_valid():
+            presentation_url = form.cleaned_data['presentation_url']
+            slides = get_slides(presentation_url)
+            slide_lyrics = []
+            for slide in slides:
+                tagged_sentence = pos_tag(word_tokenize(slide))
+                verbs = [w for w in tagged_sentence if w[1].startswith("VB")]
+                verbs = [v[0] for v in verbs]
+                if len(verbs):
+                    lyric = find_lyrics_for_verb(verbs[0])
+                    slide_lyrics.append(lyric)
+                    add_comment_to_slide(presentation_url, slide_lyrics[0])
+            return HttpResponse(json.dumps({"lyrics": slide_lyrics}, indent=2))
+        else:
+            return HttpResponse("Invalid form.")
 

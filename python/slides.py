@@ -4,6 +4,7 @@ import httplib2
 import os
 import re
 import datetime
+import drive
 
 from apiclient import discovery
 from oauth2client import client
@@ -18,7 +19,7 @@ except ImportError:
 
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/slides.googleapis.com-python-quickstart.json
-SCOPES = 'https://www.googleapis.com/auth/presentations.readonly'
+SCOPES = 'https://www.googleapis.com/auth/drive.metadata.readonly'
 CLIENT_SECRET_FILE = '../client_secret.json'
 APPLICATION_NAME = 'Google Slides API Python Quickstart'
 
@@ -38,10 +39,8 @@ def scrapeTextFromSlides(slides):
                         slideText.append(x["textRun"]["content"])
             except:
                 continue
-
     if len(slideText) > 0:
         writeToTextFile(slideText)
-    print(slideText)
     return slideText
     
 
@@ -83,23 +82,20 @@ def get_credentials():
 
 
 def main():
-    """Shows basic usage of the Slides API.
-
-    Creates a Slides API service object and prints the number of slides and
-    elements in a sample presentation:
-    https://docs.google.com/presentation/d/1EAYk18WDjIG-zp_0vLm3CsfQh_i8eXc67Jo2O9C6Vuc/edit
-    """
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
-    service = discovery.build('slides', 'v1', http=http)
 
-    presentationId = '19A4iCEHvXvLcgH5ugmQEHQfCRmqyPMS4Oy-kpXNXy8E'
-    presentation = service.presentations().get(
+    slideService = discovery.build('slides', 'v1', http=http)
+   
+    url = "https://docs.google.com/presentation/d/19A4iCEHvXvLcgH5ugmQEHQfCRmqyPMS4Oy-kpXNXy8E/edit#slide=id.g24c9281fb6_0_4"
+    presentationId = findPresentationId(url)
+    presentation = slideService.presentations().get(
         presentationId=presentationId).execute()
 
-
     slides = presentation.get('slides')
-    scrapeTextFromSlides(slides)
+    slideText = scrapeTextFromSlides(slides)
+
+    drive.main(presentationId, "woooooow")
 
 if __name__ == '__main__':
     main()

@@ -41,6 +41,9 @@ def scrapeTextFromSlides(slides):
 
     if len(slideText) > 0:
         writeToTextFile(slideText)
+    print(slideText)
+    return slideText
+    
 
 def writeToTextFile(text):
     timeNow = datetime.datetime.now().strftime("%Y-%m-%d(%H:%M:%S)")
